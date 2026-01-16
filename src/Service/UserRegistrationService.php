@@ -15,7 +15,7 @@ class UserRegistrationService {
         private UserPasswordHasherInterface $hasher
     ) {}
 
-    public function Register (RegistrationUser $dto): User {
+    public function register (RegistrationUser $dto): User {
         $user = new User();
         $user->setFirstName($dto->firstName);
         $user->setLastName($dto->lastName);
