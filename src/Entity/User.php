@@ -121,6 +121,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getFirstName(): ?string {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName) :static {
+        $this->firstName = $firstName;
+        return $this;
+    }
+
+    public function getLastName () :?string {
+        return $this->lastName;
+    }
+
+    public function setLastName (String $lastName) :static {
+        $this->lastName = $lastName;
+        return $this;
+    }
+
+    public function getPhone () :?string {
+        return $this->phone;
+    }
+
+    public function setPhone (String $phone) :static {
+        $this->phone = $phone;
+        return $this;
+    }
+
+    public function getEmail () :?string {
+        return $this->phone;
+    }
+
+    public function setEmail (string $email) :static {
+        $this->email = $email;
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
