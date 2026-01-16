@@ -9,94 +9,80 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: '`user`')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_ID', fields: ['id'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    /**
-     * @var int ID
-     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    /**
-     * @var string Name
-     */
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'El campo debe rellenarse')]
-    #[Assert\Length]
+    #[Assert\Length(min: 3, max: 100)]
+    private ?string $firstName = null;
 
-    /**
-     * @var string The email
-     */
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'El campo debe rellenarse')]
-    #[Assert\Email(message: 'Email inválido')]
+    #[Assert\Length(min: 3, max: 100)]
+    private ?string $lastName = null;
+
+    #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Email]
     private ?string $email = null;
 
-    /**
-     * @var string The hashed password
-     */
+    #[ORM\Column(length: 20, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Regex(
+        pattern: '/^(\+34|0034|34)?[6789]\d{8}$/',
+        message: 'Teléfono inválido'
+    )]
+    private ?string $phone = null;
+
     #[ORM\Column]
     private ?string $password = null;
 
-
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
     private array $roles = [];
+    
+    #[ORM\Column]
+    private ?bool $isActive = true;
 
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
 
-    public function getId(): ?string
+    #[ORM\Column]
+    private \DateTimeImmutable $updatedAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(string $id): static
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
-        return (string) $this->id;
+        return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
+        return array_unique(array_merge($this->roles, ['ROLE_USER']));
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -105,24 +91,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
-    /**
-     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
-     */
-    public function __serialize(): array
-    {
-        $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
-
-        return $data;
+    public function getCreatedAt(): ?\DateTimeImmutable {
+        return $this->createdAt;
     }
 
-    #[\Deprecated]
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt) :static {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getIsActive(): ?bool {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive) :static {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+    
+    #[ORM\PreUpdate]
+    public function updateTimestamp(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
     public function eraseCredentials(): void
     {
-        // @deprecated, to be removed when upgrading to Symfony 8
+        // JWT → nothing to clean
     }
 }
