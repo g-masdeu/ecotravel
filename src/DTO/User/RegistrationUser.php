@@ -8,10 +8,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class RegistrationUser {
     #[Assert\NotBlank(message: 'El nombre es obligatorio.')]
-    #[Assert\Length(message: 2)]
+    #[Assert\Length(min: 3, max: 100)]
     public string $firstName;
 
     #[Assert\NotBlank(message: 'El apellido es obligatorio.')]
+    #[Assert\Length(min: 3, max: 100)]
     public string $lastName;
 
     #[Assert\NotBlank(message: 'El email es obligatorio.')]
@@ -26,6 +27,6 @@ class RegistrationUser {
     public string $phone;
 
     #[Assert\NotBlank]
-    #[Assert\Length(min: 8, message: 'La contraseña debe tener al menos 8 caracteres')]
+    #[Assert\Length(min: 8)]
     public string $password;
 }
